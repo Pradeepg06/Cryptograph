@@ -1,0 +1,133 @@
+/* Login.module.css */
+
+/* Container for the whole login form */
+.loginContainer {
+  max-width: 400px; /* Max width for the form */
+  margin: 40px auto; /* Center the container horizontally */
+  padding: 30px; /* Inner space */
+  border: 1px solid #ccc; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  background-color: #fff; /* White background */
+  font-family: sans-serif; /* Use a common system font */
+  color: #333; /* Default text color */
+}
+
+/* Style for the main heading */
+.loginContainer h2 {
+  text-align: center; /* Center the title */
+  margin-bottom: 20px; /* Space below the title */
+  color: #007bff; /* Highlight color for title */
+}
+
+/* Style for the form element itself */
+.loginForm {
+  display: flex; /* Use flexbox for layout */
+  flex-direction: column; /* Stack children vertically */
+  gap: 15px; /* Space between form elements (inputs, button) */
+}
+
+/* Style for the input fields */
+.loginForm input[type="text"],
+.loginForm input[type="password"],
+.loginForm input[type="email"] { /* Added email type style */
+  padding: 10px 12px; /* Inner padding */
+  border: 1px solid #ccc; /* Default border */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 1rem; /* Standard text size */
+  width: 100%; /* Take full width of the form container */
+  box-sizing: border-box; /* Include padding and border in the element's total width */
+}
+
+/* Style for input fields when they are focused */
+.loginForm input:focus {
+  outline: none; /* Remove default outline */
+  border-color: #007bff; /* Highlight border color */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); /* Add a subtle glow */
+}
+
+
+/* Style for the submit button */
+.loginForm button {
+  padding: 12px 20px; /* Inner padding */
+  background-color: #007bff; /* Primary button color */
+  color: white; /* Text color */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Indicate it's clickable */
+  font-size: 1.1rem; /* Slightly larger text */
+  transition: background-color 0.2s ease; /* Smooth transition for hover */
+}
+
+/* Style for the button when hovered */
+.loginForm button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* Style for the button when disabled (e.g., during loading) */
+.loginForm button:disabled {
+    background-color: #cccccc; /* Grey background */
+    cursor: not-allowed; /* Not-allowed cursor */
+}
+
+
+/* Style for the message paragraph */
+.message {
+  margin-top: 15px; /* Space above the message */
+  text-align: center; /* Center the text */
+  padding: 10px; /* Inner padding */
+  border-radius: 4px; /* Rounded corners */
+}
+
+/* Specific style for success messages */
+.message.success {
+    color: #155724; /* Dark green text */
+    background-color: #d4edda; /* Light green background */
+    border: 1px solid #c3e6cb; /* Green border */
+}
+
+/* Specific style for error messages */
+.message.error {
+    color: #721c24; /* Dark red text */
+    background-color: #f8d7da; /* Light red background */
+    border: 1px solid #f5c6cb; /* Red border */
+}
+
+/* Style for loading message (optional but good UX) */
+.loading {
+    text-align: center;
+    margin-top: 10px;
+    color: #555; /* Grey text */
+    font-style: italic;
+}
+
+/* Add this section to your existing Login.module.css */
+
+.switchFormMessage {
+    margin-top: 20px; /* Space above this message */
+    text-align: center; /* Center the text */
+    font-size: 0.9em; /* Slightly smaller text */
+    color: #555; /* Grey text color */
+}
+
+.switchFormButton {
+    background: none; /* Remove button background */
+    border: none; /* Remove button border */
+    color: #007bff; /* Link color */
+    cursor: pointer; /* Indicate it's clickable */
+    text-decoration: underline; /* Underline like a link */
+    padding: 0; /* Remove padding */
+    font-size: 1em; /* Match parent font size */
+    font-family: inherit; /* Inherit font family */
+    transition: color 0.2s ease; /* Smooth color transition */
+}
+
+.switchFormButton:hover {
+    color: #0056b3; /* Darker color on hover */
+}
+
+.switchFormButton:disabled {
+    color: #ccc; /* Grey out when disabled */
+    cursor: not-allowed;
+    text-decoration: none; /* Remove underline when disabled */
+}

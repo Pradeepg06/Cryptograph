@@ -1,0 +1,215 @@
+/* Chat.module.css */
+
+/* Container for the whole chat screen */
+.chatContainer {
+  max-width: 700px; /* Wider than auth forms */
+  margin: 20px auto; /* Center with less margin top/bottom */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  display: flex; /* Use flexbox for overall layout */
+  flex-direction: column; /* Stack children vertically */
+  height: calc(100vh - 40px); /* Occupy most of viewport height (adjust 40px for margin) */
+  box-sizing: border-box; /* Include padding in height */
+}
+
+/* Header area (back button and chat partner name) */
+.chatHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ebf4ff;
+    flex-shrink: 0; /* Prevent shrinking in flex column */
+}
+
+.chatHeader h3 {
+  margin: 0 0 0 15px; /* Space between button and name */
+  color: #5a67d8;
+  font-size: 1.5rem;
+  font-weight: 600;
+  flex-grow: 1; /* Allow name to take available space */
+}
+
+/* Style for the Back button */
+.backButton {
+    background-color: #e2e8f0; /* Light background */
+    color: #4a5568; /* Darker text */
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.backButton:hover {
+    background-color: #c3dafe;
+}
+
+
+/* Container for messages - the main scrollable area */
+.messageList {
+  flex-grow: 1; /* Takes up remaining space */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px; /* Inner padding */
+  display: flex;
+  flex-direction: column; /* Stack messages vertically */
+   /* Optional: If you want messages at the bottom initially, reverse column and use justify-content: flex-end */
+   /* flex-direction: column-reverse; */
+   /* justify-content: flex-end; */
+}
+
+/* Style for individual message bubbles */
+.messageBubble {
+  margin-bottom: 12px; /* Space between messages */
+  padding: 10px 15px;
+  border-radius: 20px; /* Rounded corners for bubbles */
+  max-width: 80%; /* Limit message width */
+  word-wrap: break-word; /* Break long words */
+  line-height: 1.4;
+  position: relative; /* Needed for pointer */
+}
+
+/* Pointer / Tail effect (optional) */
+.messageBubble::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border: solid transparent;
+    border-bottom-color: inherit; /* Inherit color from bubble */
+    border-width: 8px;
+    pointer-events: none;
+}
+
+
+/* Style for messages sent by the current user */
+.sent {
+  align-self: flex-end; /* Align to the right */
+  background-color: #5a67d8; /* Primary color */
+  color: white;
+  /* Pointer on the right */
+  border-bottom-color: #5a67d8;
+  right: 0px; /* Position relative to bubble */
+  margin-right: 10px; /* Offset for pointer */
+}
+
+.sent::before {
+    left: auto; /* Position on the right */
+    right: -8px;
+    border-bottom-color: #5a67d8;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+}
+
+
+/* Style for messages received from the other user */
+.received {
+  align-self: flex-start; /* Align to the left */
+  background-color: #e2e8f0; /* Light background */
+  color: #2d3748; /* Dark text */
+   /* Pointer on the left */
+   margin-left: 10px; /* Offset for pointer */
+}
+
+.received::before {
+    left: -8px; /* Position on the left */
+    right: auto;
+    border-bottom-color: #e2e8f0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+}
+
+
+/* Style for sender username inside the bubble */
+.messageSender {
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: block; /* Ensure sender name is on its own line */
+  font-size: 0.9em; /* Smaller font */
+  color: rgba(255, 255, 255, 0.8); /* Slightly transparent white for sent */
+}
+
+.received .messageSender {
+   color: rgba(0, 0, 0, 0.6); /* Slightly transparent black for received */
+}
+
+
+/* Style for the message content */
+.messageContent {
+  /* Add any specific text styles if needed */
+}
+
+
+/* Form for input and button */
+.messageInputForm {
+  display: flex; /* Use flexbox for input and button */
+  margin-top: 15px;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Style for the message input field */
+.messageInput {
+  flex-grow: 1; /* Take up most of the space */
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px; /* Match bubble style */
+  margin-right: 10px; /* Space between input and button */
+  font-size: 1rem;
+}
+
+.messageInput:focus {
+  outline: none;
+  border-color: #5a67d8;
+  box-shadow: 0 0 5px rgba(90, 103, 216, 0.3);
+}
+
+/* Style for the send button */
+.sendButton {
+  padding: 10px 20px;
+  background-color: #5a67d8;
+  color: white;
+  border: none;
+  border-radius: 20px; /* Match bubble/input style */
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.sendButton:hover {
+  background-color: #434190;
+}
+
+.sendButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* Loading, Error, and No messages styles */
+.loading, .errorMessage, .noMessagesMessage {
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+.loading {
+    color: #5a67d8;
+}
+
+.errorMessage {
+    color: #e53e3e; /* Red */
+}
+
+.noMessagesMessage {
+    color: #718096; /* Grey */
+}

@@ -1,96 +1,99 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient'; // Adjust path if necessary
+import { supabase } from '../supabaseClient';
+import { Link, useNavigate } from 'react-router-dom';
 
-// Import the CSS Module
-import styles from './Home.module.css'; // Adjust path if necessary
+import styles from './Home.module.css'; // CSS Module
 
 export default function Home({ currentUser, onChatWith }) {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state for fetching users
-  const [error, setError] = useState(null); // Add error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Add this hook
 
   useEffect(() => {
     async function fetchUsers() {
       console.log("Home.jsx: Fetching users...");
-      setLoading(true); // Start loading
-      setError(null); // Clear previous errors
+      setLoading(true);
+      setError(null);
 
-      // Fetch users from the 'users' table
       const { data, error: fetchError } = await supabase
         .from('users')
-        .select('username, public_key_n, public_key_e'); // Fetch public keys too, useful later for chat
+        .select('username, public_key_n, public_key_e');
 
       if (fetchError) {
-          console.error("Error fetching users:", fetchError);
-          setError("Failed to load users."); // Set error message
-          setUsers([]); // Clear users on error
+        console.error("Error fetching users:", fetchError);
+        setError("Failed to load users.");
+        setUsers([]);
       } else {
-          console.log("Users fetched:", data);
-          // Filter out the current user from the list
-          // Store the user objects including public keys
-          setUsers(data.filter(u => u.username !== currentUser));
+        console.log("Users fetched:", data);
+        setUsers(data.filter(u => u.username !== currentUser));
       }
-      setLoading(false); // Stop loading
+
+      setLoading(false);
     }
 
-    // Fetch users when the component mounts or currentUser changes
     fetchUsers();
 
-    // Optional: Set up a real-time subscription for new users joining
-    // This would make the user list update automatically
     const subscription = supabase
-        .channel('users') // Use a specific channel name
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
-            console.log('New user joined:', payload.new);
-            // Add the new user to the list if it's not the current user
-            if (payload.new.username !== currentUser) {
-                setUsers(currentUsers => [...currentUsers, payload.new]);
-            }
-        })
-        .subscribe(); // Don't forget to subscribe!
+      .channel('users')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'users' },
+        (payload) => {
+          console.log('New user joined:', payload.new);
+          if (payload.new.username !== currentUser) {
+            setUsers(current => [...current, payload.new]);
+          }
+        }
+      )
+      .subscribe();
 
-    // Cleanup function for the effect
     return () => {
-        console.log("Home.jsx: Cleaning up user subscription.");
-        supabase.removeChannel(subscription); // Remove the subscription on component unmount
+      console.log("Home.jsx: Cleaning up user subscription.");
+      supabase.removeChannel(subscription);
     };
+  }, [currentUser]);
 
-  }, [currentUser]); // Dependency array includes currentUser
+  const handleUserClick = (username) => {
+    onChatWith(username);
+    navigate('/chat'); // Add navigation
+  };
 
   return (
-    // Apply the container style from the CSS module
     <div className={styles.homeContainer}>
-      {/* Apply heading styles */}
       <h2>Welcome, {currentUser}!</h2>
-
       <h3>Available Users:</h3>
 
-      {loading && <p className={styles.loading}>Loading users...</p>} {/* Loading message */}
-      {error && <p className={`${styles.message} ${styles.error}`}>{error}</p>} {/* Error message */}
+      {loading && <p className={styles.loading}>Loading users...</p>}
+      {error && <p className={`${styles.message} ${styles.error}`}>{error}</p>}
 
-      {/* Conditionally render the user list or a message if no users */}
       {!loading && !error && users.length === 0 && (
-          <p className={styles.noUsersMessage}>No other users found yet. Invite someone to sign up!</p>
+        <p className={styles.noUsersMessage}>
+          No other users found yet. Invite someone to sign up!
+        </p>
       )}
 
-      {/* Apply list style - only render if there are users and no error */}
       {!loading && !error && users.length > 0 && (
         <ul className={styles.userList}>
-          {users.map(user => ( // Map over user objects
-            // Apply list item style
+          {users.map(user => (
             <li key={user.username} className={styles.userItem}>
-              {/* Apply button style */}
-              {/* When button is clicked, call onChatWith prop with the selected username */}
-              {/* We might need the public key later, but onChatWith currently expects just username */}
-              <button className={styles.userButton} onClick={() => onChatWith(user.username)}>
-                  {user.username}
+              <button 
+                className={styles.userButton} 
+                onClick={() => handleUserClick(user.username)} // Update click handler
+              >
+                {user.username}
               </button>
             </li>
           ))}
         </ul>
       )}
-      {/* Note: The Logout button is handled in App.jsx based on your structure,
-           so it's not included here. If you move it here, apply styles.logoutButton */}
+
+      {/* Link to Cryptanalytic Attack Demo */}
+      <div className={styles.demoLinkContainer}>
+        <Link to="/attack-demo" className={styles.demoLinkButton}>
+          🔓 Cryptanalytic Attack Demo
+        </Link>
+      </div>
     </div>
   );
 }

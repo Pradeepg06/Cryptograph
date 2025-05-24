@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { encrypt, decrypt } from '../crypto/rsa';
 
-export default function ChatRoom({ currentUser, chatWith, privateKey }) {
+export default function ChatRoom({ currentUser, chatWith, setChatWith, privateKey }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [chatPartnerPublicKey, setChatPartnerPublicKey] = useState(null);
+  const [showCipher, setShowCipher] = useState(false);
 
+  // Fetch partner's public key
   useEffect(() => {
-    // Fetch chat partner public key
     async function fetchPublicKey() {
       const { data, error } = await supabase
         .from('users')
@@ -17,6 +18,7 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
 
       if (error) {
         console.error('Error fetching public key:', error);
+        setChatPartnerPublicKey(null);
         return;
       }
 
@@ -30,33 +32,42 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
 
     if (chatWith) {
       fetchPublicKey();
-      // Subscribe to new messages
+
       const subscription = supabase
-        .channel(`chat_${[currentUser, chatWith].sort().join('_')}`) // Unique channel name for the pair
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, payload => {
-          // Filter messages relevant to this chat
-          if (
-            (payload.new.sender === currentUser && payload.new.receiver === chatWith) ||
-            (payload.new.sender === chatWith && payload.new.receiver === currentUser)
-          ) {
-            setMessages(prevMessages => [...prevMessages, payload.new]);
+        .channel(`chat_${[currentUser, chatWith].sort().join('_')}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'messages' },
+          (payload) => {
+            const newMsg = payload.new;
+            if (
+              (newMsg.sender === currentUser && newMsg.receiver === chatWith) ||
+              (newMsg.sender === chatWith && newMsg.receiver === currentUser)
+            ) {
+              setMessages((prev) => [...prev, newMsg]);
+            }
           }
-        })
+        )
         .subscribe();
 
       return () => {
         supabase.removeChannel(subscription);
       };
+    } else {
+      setChatPartnerPublicKey(null);
+      setMessages([]);
     }
   }, [currentUser, chatWith]);
 
+  // Initial fetch of messages
   useEffect(() => {
-    // Fetch initial messages
     async function fetchMessages() {
       const { data, error } = await supabase
         .from('messages')
         .select('*')
-        .or(`and(sender.eq.${currentUser},receiver.eq.${chatWith}),and(sender.eq.${chatWith},receiver.eq.${currentUser})`)
+        .or(
+          `and(sender.eq.${currentUser},receiver.eq.${chatWith}),and(sender.eq.${chatWith},receiver.eq.${currentUser})`
+        )
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -64,16 +75,18 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
         return;
       }
 
-      // Decrypt messages if privateKey is available
       if (data && privateKey) {
-        const decryptedMessages = data.map(msg => {
+        const decryptedMessages = data.map((msg) => {
+          let plain = msg.content;
           try {
-            const decryptedContent = decrypt(msg.content, privateKey.n, privateKey.d);
-            return { ...msg, content: decryptedContent };
+            plain = decrypt(msg.content, privateKey.n, privateKey.d);
           } catch (e) {
-            console.error('Error decrypting message:', e);
-            return msg; // Return encrypted message if decryption fails
+            console.warn('Decryption failed:', e);
           }
+          return {
+            ...msg,
+            plainContent: plain,
+          };
         });
         setMessages(decryptedMessages);
       } else {
@@ -83,6 +96,8 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
 
     if (chatWith && privateKey) {
       fetchMessages();
+    } else {
+      setMessages([]);
     }
   }, [currentUser, chatWith, privateKey]);
 
@@ -91,34 +106,26 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
     if (!input.trim() || !chatPartnerPublicKey) return;
 
     try {
-      // Encrypt the message
       const encryptedMessage = encrypt(input, chatPartnerPublicKey.n, chatPartnerPublicKey.e);
 
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            sender: currentUser,
-            receiver: chatWith,
-            content: encryptedMessage, // Store encrypted content
-          },
-        ]);
+      const { error } = await supabase.from('messages').insert([
+        {
+          sender: currentUser,
+          receiver: chatWith,
+          content: encryptedMessage,
+        },
+      ]);
 
       if (error) {
         console.error('Error sending message:', error);
       } else {
         setInput('');
-        // The new message will be added to state via the real-time subscription
       }
     } catch (e) {
-      console.error('Error encrypting or sending message:', e);
+      console.error('Encryption/send failed:', e);
     }
   };
 
-  // Added missing UsersList component snippet based on the user's partial code
-  // Assuming this is how the UsersList component might look based on the fragment provided.
-  // This part was not fully in the original request but seems implied by the second block.
-  // If this was unintended, please disregard this component.
   function UsersList({ currentUser, onChatWith }) {
     const [users, setUsers] = useState([]);
 
@@ -129,15 +136,13 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
           console.error('Error fetching users:', error);
           return;
         }
-        // Filter out the current user
-        setUsers(data.filter(u => u.username !== currentUser));
+        setUsers(data.filter((u) => u.username !== currentUser));
       }
       fetchUsers();
     }, [currentUser]);
 
     return (
       <div>
-        <h2>Welcome, {currentUser}</h2>
         <h3>Users</h3>
         <ul>
           {users.map((user) => (
@@ -152,39 +157,58 @@ export default function ChatRoom({ currentUser, chatWith, privateKey }) {
     );
   }
 
-
   return (
     <div>
       <h1>Chat Room</h1>
       {chatWith ? (
         <>
+          <button onClick={() => setChatWith(null)}>Back to Users List</button>
           <h2>Chatting with {chatWith}</h2>
-          <div className="messages">
+
+          <div style={{ marginBottom: '10px' }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={showCipher}
+                onChange={() => setShowCipher(!showCipher)}
+              />{' '}
+              Show Ciphertext
+            </label>
+          </div>
+
+          <div className="messages" style={{ marginBottom: '10px', maxHeight: '300px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
             {messages.map((msg) => (
-              <div key={msg.id} className={msg.sender === currentUser ? 'sent' : 'received'}>
-                <strong>{msg.sender}:</strong> {privateKey ? (msg.sender === currentUser ? decrypt(msg.content, privateKey.n, privateKey.d) : msg.content) : msg.content}
-                {/* Note: Messages sent by the other user are displayed as encrypted if privateKey is not available here,
-                         or if decryption failed earlier. A more robust approach would handle this UI differently.
-                         The decrypt function is called inline here for the current user's messages for demonstration,
-                         but initial fetch already decrypts for both sides if possible. The message content in state
-                         should ideally be the decrypted one if successful. */}
+              <div
+                key={msg.id}
+                style={{
+                  backgroundColor: msg.sender === currentUser ? '#DCF8C6' : '#FFF',
+                  padding: '5px',
+                  margin: '5px 0',
+                  borderRadius: '5px',
+                  textAlign: msg.sender === currentUser ? 'right' : 'left',
+                }}
+              >
+                <strong>{msg.sender}:</strong>{' '}
+                {showCipher ? msg.content : msg.plainContent || msg.content}
               </div>
             ))}
           </div>
+
           <form onSubmit={handleSend}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message"
-              disabled={!chatPartnerPublicKey} // Disable input until public key is fetched
+              disabled={!chatPartnerPublicKey}
             />
-            <button type="submit" disabled={!chatPartnerPublicKey}>Send</button>
+            <button type="submit" disabled={!chatPartnerPublicKey}>
+              Send
+            </button>
           </form>
         </>
       ) : (
-         // Render UsersList if no chat partner is selected
-        <UsersList currentUser={currentUser} onChatWith={chatWith} />
+        <UsersList currentUser={currentUser} onChatWith={setChatWith} />
       )}
     </div>
   );

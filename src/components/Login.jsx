@@ -2,149 +2,186 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { decrypt } from '../crypto/rsa';
+import styles from './Login.module.css';
 
-// Import the CSS Module
-import styles from './Login.module.css'; // Make sure this path is correct
-
-// Accept a new prop: onGoToSignup
 export default function Login({ onLogin, onGoToSignup }) {
-  const [username, setUsername] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [username, setUsername] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [privateKeyFile, setPrivateKeyFile] = useState(null);
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setMessage(''); // Clear previous messages
-    setLoading(true); // Start loading
+  // Handle private key file selection
+  function handleFileChange(e) {
+    setPrivateKeyFile(e.target.files[0]);
+  }
 
-    // --- SECURITY WARNING ---
-    // Relying on a private key stored insecurely in localStorage
-    // is NOT secure for real applications. This is for demonstration purposes ONLY.
-    // --- END WARNING ---
+  // Read private key file and store in localStorage
+  function importPrivateKey(username) {
+  return new Promise((resolve, reject) => {
+    if (!privateKeyFile) {
+      reject(new Error('Please upload your private key file.'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
 
-    try {
-      console.log("Starting login process...");
+        // Parse the text manually to get n and d
+        // Example content:
+        // Private Key for John
+        //
+        // n: 11529312800025574447
+        // d: 1281757984214221953
 
-       // Basic validation: Check if username is provided
-       if (!username.trim()) {
-           throw new Error("Username is required.");
-       }
+        // Split lines and look for lines starting with 'n:' and 'd:'
+        const lines = text.split('\n').map(line => line.trim());
+        const nLine = lines.find(line => line.startsWith('n:'));
+        const dLine = lines.find(line => line.startsWith('d:'));
 
-      // 1. Get encrypted password from DB
-      console.log(`Fetching user data for username: ${username}`); // Corrected typo 'Workspaceing' to 'Fetching'
-      const { data, error } = await supabase
-        .from('authentication')
-        .select('encrypted_password') // Only need the encrypted password for login
-        .eq('username', username)
-        .single();
+        if (!nLine || !dLine) {
+          throw new Error('Invalid private key file format.');
+        }
 
-      if (error || !data) {
-          console.error("User not found or fetch error:", error);
-          // Use a more generic message for security
-          throw new Error('Invalid username or password.');
-      }
-      console.log("User data fetched.");
+        const n = nLine.split(':')[1].trim();
+        const d = dLine.split(':')[1].trim();
 
-      // 2. Get private key from localStorage (demo only)
-       // Retrieve the private key using the username as part of the key
-       console.log(`Attempting to retrieve private key for ${username} from localStorage...`);
-      const privateKeyN = localStorage.getItem(`privateKey_n_${username}`); // Key includes username
-      const privateKeyD = localStorage.getItem(`privateKey_d_${username}`); // Key includes username
+        // Save in localStorage keyed by username
+        localStorage.setItem(`privateKey_n_${username}`, n);
+        localStorage.setItem(`privateKey_d_${username}`, d);
 
-      if (!privateKeyN || !privateKeyD) {
-           console.error(`Private key for ${username} not found in localStorage.`);
-           // Suggest signup if key isn't found locally for this specific username
-           setMessage(`Private key for ${username} not found locally. Please sign up with this username on this device first.`);
-           setLoading(false); // Stop loading specifically here
-           return; // Stop the login process
-      }
-
-      const privateKey = {
-         n: BigInt(privateKeyN),
-         d: BigInt(privateKeyD),
-      };
-       console.log(`Private key for ${username} retrieved.`);
-
-
-      // 3. Decrypt stored encrypted password
-       console.log("Decrypting password...");
-      const decryptedPassword = decrypt(data.encrypted_password, privateKey); // Pass private key object
-       console.log("Password decrypted.");
+        resolve();
+      } catch (err) {
+        reject(new Error('Failed to parse private key file: ' + err.message));
+      }
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to read private key file.'));
+    };
+    reader.readAsText(privateKeyFile);
+  });
+}
 
 
-      // 4. Check if decrypted password matches input password
-      if (decryptedPassword === passwordInput) {
-         console.log("Password match. Login successful.");
-        setMessage('Login successful!');
-        // Call the onLogin prop passed from the parent
-        onLogin(username, privateKey); // Pass data up
-      } else {
-         console.warn("Password mismatch. Login failed.");
-        setMessage('Login failed: incorrect password.');
-      }
-    } catch (error) {
-      console.error("Login error:", error); // Log the actual error
-      setMessage(`Login failed: ${error.message || 'An unknown error occurred.'}`);
-    } finally {
-      setLoading(false); // Stop loading regardless of success or failure
-       console.log("Login process finished.");
-    }
-  }
+  async function handleLogin(e) {
+    e.preventDefault();
+    setMessage('');
+    setLoading(true);
 
-   // Determine the CSS class for the message paragraph based on content
-   const messageClass = message.includes('success') ? styles.success : (message ? styles.error : '');
+    try {
+      if (!username.trim()) {
+        throw new Error('Username is required.');
+      }
+      if (!passwordInput) {
+        throw new Error('Password is required.');
+      }
 
+      // Import private key from uploaded file first (if file selected)
+      if (privateKeyFile) {
+        setMessage('Importing private key...');
+        await importPrivateKey(username);
+        setMessage('Private key imported successfully.');
+      }
 
-  return (
-    // Apply the container style from the CSS module
-    <div className={styles.loginContainer}>
-      <h2>Login</h2>
-      {/* Apply the form style */}
-      <form onSubmit={handleLogin} className={styles.loginForm}>
-        <input
-          placeholder="Username"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          required
-          disabled={loading} // Disable inputs while loading
-           className={styles.loginInput} // Apply input style
-        />
-        <input
-          placeholder="Password"
-          type="password"
-          value={passwordInput}
-          onChange={e => setPasswordInput(e.target.value)}
-          required
-          disabled={loading} // Disable inputs while loading
-           className={styles.loginInput} // Apply input style
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging In...' : 'Login'} {/* Button text changes */}
-        </button>
-      </form>
+      // Retrieve private key from localStorage
+      const privateKeyN = localStorage.getItem(`privateKey_n_${username}`);
+      const privateKeyD = localStorage.getItem(`privateKey_d_${username}`);
 
-      {/* Display message with dynamic class */}
-      {message && (
-          <p className={`${styles.message} ${messageClass}`}>
-              {message}
-          </p>
-      )}
-       {/* Loading indicator message */}
-       {loading && <p className={styles.loading}>Processing login...</p>}
+      if (!privateKeyN || !privateKeyD) {
+        throw new Error(
+          `Private key for ${username} not found locally. Please upload your private key file.`
+        );
+      }
 
-       {/* Link/button to go to the signup page */}
-       <p className={styles.switchFormMessage}> {/* Optional: style this paragraph */}
-            Don't have an account?{' '}
-            <button
-                type="button" // Important: Use type="button" to prevent form submission
-                onClick={onGoToSignup}
-                className={styles.switchFormButton} // Optional: style this button
-                disabled={loading} // Disable button while loading
-            >
-                Sign Up
-            </button>
-       </p>
-    </div>
-  );
+      const privateKey = {
+        n: BigInt(privateKeyN),
+        d: BigInt(privateKeyD),
+      };
+
+      // Fetch encrypted password from Supabase
+      const { data, error } = await supabase
+        .from('authentication')
+        .select('encrypted_password')
+        .eq('username', username)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Invalid username or password.');
+      }
+
+      // Decrypt stored encrypted password
+      const decryptedPassword = decrypt(data.encrypted_password, privateKey);
+
+      if (decryptedPassword === passwordInput) {
+        setMessage('Login successful!');
+        onLogin(username, privateKey);
+      } else {
+        setMessage('Login failed: incorrect password.');
+      }
+    } catch (error) {
+      setMessage(`Login failed: ${error.message || 'An unknown error occurred.'}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const messageClass = message.toLowerCase().includes('success') ? styles.success : (message ? styles.error : '');
+
+  return (
+    <div className={styles.loginContainer}>
+      <h2>Login</h2>
+      <form onSubmit={handleLogin} className={styles.loginForm}>
+        <input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          disabled={loading}
+          className={styles.loginInput}
+        />
+        <input
+          placeholder="Password"
+          type="password"
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          required
+          disabled={loading}
+          className={styles.loginInput}
+        />
+
+        {/* Private Key File Upload */}
+        <label className={styles.fileLabel} htmlFor="privateKeyFile">
+          Upload your Private Key File (JSON)
+        </label>
+        <input
+          id="privateKeyFile"
+          type="file"
+          accept=".json,.txt"
+          onChange={handleFileChange}
+          disabled={loading}
+          className={styles.fileInput}
+        />
+
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging In...' : 'Login'}
+        </button>
+      </form>
+
+      {message && <p className={`${styles.message} ${messageClass}`}>{message}</p>}
+      {loading && <p className={styles.loading}>Processing login...</p>}
+
+      <p className={styles.switchFormMessage}>
+        Don't have an account?{' '}
+        <button
+          type="button"
+          onClick={onGoToSignup}
+          className={styles.switchFormButton}
+          disabled={loading}
+        >
+          Sign Up
+        </button>
+      </p>
+    </div>
+  );
 }

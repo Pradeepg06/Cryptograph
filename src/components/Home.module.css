@@ -149,3 +149,32 @@
     background-color: #9b2c2c; /* Even darker red on active */
     transform: translateY(0); /* Reset position */
 }
+
+/* Container for the attack demo button */
+.demoLinkContainer {
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Style for the Cryptanalytic Attack Demo button */
+.demoLinkButton {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #5a67d8; /* Match heading color */
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.demoLinkButton:hover {
+  background-color: #434190; /* Slightly darker purple on hover */
+  transform: translateY(-2px);
+}
+
+.demoLinkButton:active {
+  background-color: #322e80; /* Even darker purple on active */
+  transform: translateY(0);
+}

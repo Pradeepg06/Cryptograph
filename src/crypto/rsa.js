@@ -1,3 +1,4 @@
+
 // Simple BigInt modular exponentiation (base^exp mod mod)
 export function modPow(base, exponent, modulus) { // Exported for potential external use, though not strictly needed by signup.jsx
   if (modulus === 1n) return 0n;

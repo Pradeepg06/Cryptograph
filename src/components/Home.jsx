@@ -4,11 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import styles from './Home.module.css'; // CSS Module
 
-export default function Home({ currentUser, onChatWith }) {
+export default function Home({ currentUser, onChatWith, onLogout }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Add this hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchUsers() {
@@ -56,12 +56,22 @@ export default function Home({ currentUser, onChatWith }) {
 
   const handleUserClick = (username) => {
     onChatWith(username);
-    navigate('/chat'); // Add navigation
+    navigate('/chat');
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    onLogout();
+    console.log("Home.jsx: User logged out.");
+    navigate('/');
   };
 
   return (
     <div className={styles.homeContainer}>
       <h2>Welcome, {currentUser}!</h2>
+      <button onClick={handleLogout} className={styles.logoutButton}>
+        Logout
+      </button>
       <h3>Available Users:</h3>
 
       {loading && <p className={styles.loading}>Loading users...</p>}
@@ -79,7 +89,7 @@ export default function Home({ currentUser, onChatWith }) {
             <li key={user.username} className={styles.userItem}>
               <button 
                 className={styles.userButton} 
-                onClick={() => handleUserClick(user.username)} // Update click handler
+                onClick={() => handleUserClick(user.username)}
               >
                 {user.username}
               </button>
@@ -88,7 +98,6 @@ export default function Home({ currentUser, onChatWith }) {
         </ul>
       )}
 
-      {/* Link to Cryptanalytic Attack Demo */}
       <div className={styles.demoLinkContainer}>
         <Link to="/attack-demo" className={styles.demoLinkButton}>
           🔓 Cryptanalytic Attack Demo

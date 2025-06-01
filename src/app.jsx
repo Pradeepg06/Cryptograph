@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import AuthPage from './components/AuthPage';
 import Home from './components/Home';
 import Chat from './components/Chat';
-import AttackDemo from './components/AttackDemo'; // 👈 Import the new page
+import AttackDemo from './components/AttackDemo';
 
 export default function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -41,15 +41,16 @@ export default function App() {
           }
         />
 
-        {/* Home route (user list) */}
+        {/* Home route */}
         <Route
           path="/home"
           element={
             loggedInUser ? (
-              <>
-                <Home currentUser={loggedInUser} onChatWith={setChatWith} />
-                <button onClick={handleLogout}>Logout</button>
-              </>
+              <Home
+                currentUser={loggedInUser}
+                onChatWith={setChatWith}
+                onLogout={handleLogout} // Pass logout handler to Home
+              />
             ) : (
               <Navigate to="/" />
             )
@@ -61,25 +62,21 @@ export default function App() {
           path="/chat"
           element={
             loggedInUser && chatWith ? (
-              <>
-                <Chat
-                  currentUser={loggedInUser}
-                  chatWith={chatWith}
-                  privateKey={privateKey}
-                  onBackToUsers={() => {
-                    setChatWith(null);
-                    navigate('/home');
-                  }}
-                />
-                <button onClick={handleLogout}>Logout</button>
-              </>
+              <Chat
+                currentUser={loggedInUser}
+                chatWith={chatWith}
+                privateKey={privateKey}
+                onBackToUsers={() => {
+                  setChatWith(null);
+                }}
+              />
             ) : (
               <Navigate to="/home" />
             )
           }
         />
 
-        {/* Cryptanalysis Attack Demo route */}
+        {/* Attack Demo */}
         <Route path="/attack-demo" element={<AttackDemo />} />
       </Routes>
     </Router>

@@ -1,108 +1,94 @@
-/* Container for the whole home page content */
 .homeContainer {
-  max-width: 600px; /* Limit width for better readability */
-  margin: 40px auto; /* Center the container horizontally */
-  padding: 30px; /* Inner space */
-  background-color: #ffffff; /* White background */
-  border-radius: 10px; /* More rounded corners */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Stronger shadow */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
-  color: #333; /* Default text color */
-  line-height: 1.6; /* Improve readability */
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.6;
 }
 
-/* Style for the welcome heading */
 .homeContainer h2 {
-  text-align: center; /* Center the welcome message */
-  color: #5a67d8; /* A pleasant blue-purple color */
-  margin-bottom: 25px; /* Space below the heading */
-  font-size: 2rem; /* Larger font size */
-  font-weight: 700; /* Bolder */
-  letter-spacing: 0.5px; /* Slightly spaced letters */
+  text-align: center;
+  color: #5a67d8;
+  margin-bottom: 25px;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-/* Style for the "Available Users" heading */
 .homeContainer h3 {
-  color: #4a5568; /* Darker grey */
-  margin-top: 30px; /* Space above this heading */
-  margin-bottom: 15px; /* Space below this heading */
-  border-bottom: 2px solid #ebf4ff; /* More prominent separator line */
+  color: #4a5568;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ebf4ff;
   padding-bottom: 10px;
   font-size: 1.4rem;
   font-weight: 600;
 }
 
-/* Style for the user list (ul) */
 .userList {
-  list-style: none; /* Remove default bullet points */
-  padding: 0; /* Remove default padding */
-  margin: 0; /* Remove default margin */
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* Style for each user list item (li) */
 .userItem {
-  margin-bottom: 12px; /* More space between list items */
-  background-color: #f7fafc; /* Very light background for each user */
-  border: 1px solid #e2e8f0; /* Subtle border */
-  border-radius: 8px; /* Rounded corners for items */
-  overflow: hidden; /* Ensure button border-radius works */
-  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add hover effects */
+  margin-bottom: 12px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Style for list item on hover */
 .userItem:hover {
-    transform: translateY(-3px); /* Lift slightly on hover */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Add shadow on hover */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-
-/* Style for the button inside the list item (the user name) */
 .userButton {
-  display: flex; /* Use flexbox for alignment */
-  align-items: center; /* Vertically center content */
-  width: 100%; /* Button fills the list item */
-  text-align: left; /* Align text to the left */
-  padding: 15px 20px; /* More inner padding */
-  background: none; /* Remove default button background */
-  border: none; /* Remove default button border */
-  color: #2d3748; /* Dark text color */
-  font-size: 1.15rem; /* Slightly larger font size */
-  cursor: pointer; /* Indicate clickable */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Smooth transitions */
-  font-weight: 500; /* Medium font weight */
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  color: #2d3748;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-weight: 500;
 }
 
-/* Add a simple icon or indicator */
 .userButton::before {
-    content: '👤'; /* User icon emoji */
-    margin-right: 15px; /* Space between icon and text */
-    font-size: 1.2em; /* Slightly larger icon */
-    color: #5a67d8; /* Match heading color */
+  content: '👤';
+  margin-right: 15px;
+  font-size: 1.2em;
+  color: #5a67d8;
 }
 
-
-/* Style for the button when hovered */
 .userButton:hover {
-  background-color: #ebf4ff; /* Very light blue background on hover */
-  color: #2b6cb0; /* A nice blue text on hover */
+  background-color: #ebf4ff;
+  color: #2b6cb0;
 }
 
-/* Style for the button when active (clicked) */
 .userButton:active {
-    background-color: #c3dafe; /* Even darker blue on active */
+  background-color: #c3dafe;
 }
 
-/* Style for loading message */
 .loading {
-    text-align: center;
-    margin-top: 20px;
-    color: #5a67d8; /* Match theme color */
-    font-style: italic;
-    font-size: 1.1rem;
+  text-align: center;
+  margin-top: 20px;
+  color: #5a67d8;
+  font-style: italic;
+  font-size: 1.1rem;
 }
 
-/* Style for error message */
-.message { /* Re-using the message class from Login/Signup but styling specifically */
+.message {
   margin-top: 15px;
   text-align: center;
   padding: 10px;
@@ -110,57 +96,52 @@
 }
 
 .message.error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
 }
 
-/* Style for message when no users are found */
 .noUsersMessage {
-    text-align: center;
-    margin-top: 20px;
-    color: #718096; /* Greyish color */
-    font-style: italic;
+  text-align: center;
+  margin-top: 20px;
+  color: #718096;
+  font-style: italic;
 }
 
-/* Optional: Style for the logout button if it's placed within this component */
-/* (Based on your App.jsx, the logout button is outside Home, but keeping this here just in case) */
 .logoutButton {
-    display: block; /* Make it a block element */
-    width: auto; /* Auto width */
-    margin: 30px auto 0; /* Center below the list with more space */
-    padding: 10px 25px;
-    background-color: #e53e3e; /* Red color for danger action */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-weight: 600;
+  display: block;
+  width: auto;
+  margin: 30px auto 0;
+  padding: 10px 25px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-weight: 600;
 }
 
 .logoutButton:hover {
-    background-color: #c53030; /* Darker red on hover */
-    transform: translateY(-2px); /* Lift slightly */
+  background-color: #c53030;
+  transform: translateY(-2px);
 }
 
 .logoutButton:active {
-    background-color: #9b2c2c; /* Even darker red on active */
-    transform: translateY(0); /* Reset position */
+  background-color: #9b2c2c;
+  transform: translateY(0);
 }
 
-/* Container for the attack demo button */
 .demoLinkContainer {
   text-align: center;
   margin-top: 40px;
 }
 
-/* Style for the Cryptanalytic Attack Demo button */
 .demoLinkButton {
   display: inline-block;
   padding: 12px 24px;
-  background-color: #5a67d8; /* Match heading color */
+  background-color: #5a67d8;
   color: white;
   text-decoration: none;
   border-radius: 8px;
@@ -170,11 +151,30 @@
 }
 
 .demoLinkButton:hover {
-  background-color: #434190; /* Slightly darker purple on hover */
+  background-color: #434190;
   transform: translateY(-2px);
 }
 
 .demoLinkButton:active {
-  background-color: #322e80; /* Even darker purple on active */
+  background-color: #322e80;
   transform: translateY(0);
+}
+.demoLinkButton:visited {
+  color: white;
+}
+
+.logoutButton {
+  background-color: #5f3cea;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.logoutButton:hover {
+  background-color: #3824ed;
 }
